@@ -34,10 +34,10 @@
 #define LOG_TIME(msg,t)
 #endif
 
-#define SEC_TO_TICKS(sec)   ((TickType_t)(sec * configTICK_RATE_HZ))
-#define USEC_TO_TICKS(usec) ((TickType_t)(usec * configTICK_RATE_HZ / 1000000))
+#define SEC_TO_TICKS(sec)   ((TickType_t)((sec) * configTICK_RATE_HZ))
+#define USEC_TO_TICKS(usec) ((TickType_t)((usec) * configTICK_RATE_HZ / 1000000))
 
-static void local_civil_twilight(time_t time_now, struct tm const * now, time_t * morning_off, time_t * evening_on)
+static void local_daylight(time_t time_now, struct tm const * now, time_t * daylight_begins, time_t * daylight_ends)
 {
     double sunrise_hour, sunset_hour;
     civil_twilight(
@@ -56,23 +56,20 @@ static void local_civil_twilight(time_t time_now, struct tm const * now, time_t 
         midnight += 86400;
     }
 
-    *morning_off = midnight + (time_t)(sunrise_hour * 3600);
-    *evening_on  = midnight + (time_t)(sunset_hour  * 3600);
+    *daylight_begins = midnight + (time_t)(sunrise_hour * 3600);
+    *daylight_ends   = midnight + (time_t)(sunset_hour  * 3600);
 }
 
-static void task_delay_until(TickType_t * last_wake_time, struct timeval * now, time_t * end)
+static inline void task_delay(TickType_t * last_wake_time, uint32_t secs)
 {
-    vTaskDelayUntil(last_wake_time, USEC_TO_TICKS(1000000 - now->tv_usec));
-    if (*end > now->tv_sec) {
-        vTaskDelayUntil(last_wake_time, SEC_TO_TICKS(*end - now->tv_sec));
-    }
+    vTaskDelayUntil(last_wake_time, SEC_TO_TICKS(secs));
 }
 
-static void lights_on_until(TickType_t * last_wake_time, struct timeval * now, time_t * end)
+static void lights_on(TickType_t * last_wake_time, uint32_t duration)
 {
     blink_stop();
     gpio_write(RELAY_PIN, 0);
-    task_delay_until(last_wake_time, now, end);
+    task_delay(last_wake_time, duration);
     gpio_write(RELAY_PIN, 1);
     blink_restart();
 }
@@ -109,11 +106,14 @@ static void main_task(void * arg)
     // day long loop that turns lights on and off
     TickType_t last_wake_time = xTaskGetTickCount();
     for (;;) {
-        gettimeofday(&st->checkpoint, NULL);
+        struct timeval time_now;
+        gettimeofday(&time_now, NULL);
+
         struct tm tm;
-        localtime_r(&st->checkpoint.tv_sec, &tm);
+        localtime_r(&time_now.tv_sec, &tm);
         LOG_TM("Local time: ", &tm);
-        local_civil_twilight(st->checkpoint.tv_sec, &tm, &st->morning_off, &st->evening_on);
+
+        local_daylight(time_now.tv_sec, &tm, &st->morning_off, &st->evening_on);
         LOG_TIME("Morning twilight: ", st->morning_off);
         LOG_TIME("Evening twilight: ", st->evening_on);
 
@@ -135,45 +135,69 @@ static void main_task(void * arg)
         if (is_weekday) {
             LOG("Weekday\n");
 
-            if (st->checkpoint.tv_sec < st->morning_on) {
+            if (time_now.tv_sec < st->morning_on) {
                 LOG("Waiting until morning\n");
                 st->period = "Awaiting Morning";
-                task_delay_until(&last_wake_time, &st->checkpoint, &st->morning_on);
-                gettimeofday(&st->checkpoint, NULL);
-                LOG_TIME("Local time: ", st->checkpoint.tv_sec);
+                st->since = time_now.tv_sec;
+                st->duration = st->morning_on - st->since;
+                task_delay(&last_wake_time, st->duration);
+                gettimeofday(&time_now, NULL);
+                LOG_TIME("Local time: ", time_now.tv_sec);
             }
-            if (st->checkpoint.tv_sec < st->morning_off) {
-                if (st->morning_off - st->checkpoint.tv_sec < MIN_MORNING_LIGHTS * 60) {
-                    LOG("Skipping %d min %d sec of morning lights\n",
-                            (uint32_t)(st->morning_off - st->checkpoint.tv_sec) / 60,
-                            (uint32_t)(st->morning_off - st->checkpoint.tv_sec) % 60);
+            if (time_now.tv_sec < st->morning_off) {
+                if (st->morning_off - time_now.tv_sec < MIN_MORNING_LIGHTS * 60) {
+                    LOG("Skipping %u min %u sec of morning lights\n", 
+                        (uint32_t)(st->morning_off - time_now.tv_sec) / 60,
+                        (uint32_t)(st->morning_off - time_now.tv_sec) % 60);
                 } else {
                     LOG_TIME("Lights on until ", st->morning_off);
                     st->period = "Morning Lights";
-                    lights_on_until(&last_wake_time, &st->checkpoint, &st->morning_off);
-                    gettimeofday(&st->checkpoint, NULL);
-                    LOG_TIME("Lights off at ", st->checkpoint.tv_sec);
+                    st->since = time_now.tv_sec;
+                    st->duration = st->morning_off - st->since;
+                    lights_on(&last_wake_time, st->duration);
+                    gettimeofday(&time_now, NULL);
+                    LOG_TIME("Lights off at ", time_now.tv_sec);
                 }
             }
         }
 
-        if (st->checkpoint.tv_sec < st->evening_on) {
+        if (time_now.tv_sec < st->evening_on) {
             LOG("Waiting until evening\n");
             st->period = "Awaiting Evening";
-            task_delay_until(&last_wake_time, &st->checkpoint, &st->evening_on);
-            gettimeofday(&st->checkpoint, NULL);
-            LOG_TIME("Local time: ", st->checkpoint.tv_sec);
+            st->since = time_now.tv_sec;
+            st->duration = st->evening_on - st->since;
+            task_delay(&last_wake_time, st->duration);
+            gettimeofday(&time_now, NULL);
+            LOG_TIME("Local time: ", time_now.tv_sec);
         }
 
-        // night lights
-        LOG_TIME("Lights on until ", st->night_off);
-        st->period = "Night Lights";
-        lights_on_until(&last_wake_time, &st->checkpoint, &st->night_off);
-        LOG("Lights off\n");
+        if (time_now.tv_sec < st->night_off) {
+            LOG_TIME("Lights on until ", st->night_off);
+            st->period = "Night Lights";
+            st->since = time_now.tv_sec;
+            st->duration = st->night_off - st->since;
+            lights_on(&last_wake_time, st->duration);
+            gettimeofday(&time_now, NULL);
+            LOG_TIME("Lights off at ", time_now.tv_sec);
+        }
+
+        #if (NIGHT_LIGHTS_OFF_HOURS > MORNING_LIGHTS_ON_HOURS)
+        // need to wait until the next day
+        tm.tm_mday += 1;
+        tm.tm_hour = 0;
+        tm.tm_min = 0;
+        tm.tm_sec = 0; 
+        time_t midnight = mktime(&tm);
+        
+        st->period = "Awaiting Midnight";
+        st->since = time_now.tv_sec
+        st->duration = midnight - st->since;
+        task_delay(&last_wake_time, st->duration);
+        #endif
     }
 }
 
-#define TASK_STACK_SIZE 192
+#define TASK_STACK_SIZE 180
 
 void main_task_init()
 {
