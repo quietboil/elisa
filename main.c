@@ -149,9 +149,7 @@ static void main_task(void * arg)
                 st->since = time_now.tv_sec;
                 st->duration = st->morning_off - st->since;
                 if (st->duration < MIN_MORNING_LIGHTS * 60) {
-                    LOG("Skipping %u min %u sec of morning lights\n", 
-                        (uint32_t)(st->duration / 60),
-                        (uint32_t)(st->duration % 60));
+                    LOG("Skipping %u sec of morning lights\n", st->duration);
                 } else {
                     LOG_TIME("Lights on until ", st->morning_off);
                     lights_on(&last_wake_time, st->duration);
@@ -163,11 +161,15 @@ static void main_task(void * arg)
 
         if (time_now.tv_sec < st->evening_on) {
             LOG("Waiting until evening\n");
+            static char skipped_morning_lights_descr[64];
+            if (is_weekday && time_now.tv_sec < st->morning_off) {
+                sprintf(skipped_morning_lights_descr, "Awaiting Evening (skipped %u sec of morning lights)", st->duration);
+            }
             st->period = !is_weekday
                 ? "Awaiting Weekend Evening"
-                : time_now.tv_sec < st->morning_off 
-                ? "Awaiting Evening (skipped short morning lights)"
-                : "Awaiting Evening";
+                : time_now.tv_sec >= st->morning_off
+                ? "Awaiting Evening"
+                : skipped_morning_lights_descr;
             st->since = time_now.tv_sec;
             st->duration = st->evening_on - st->since;
             task_delay(&last_wake_time, st->duration);
@@ -190,11 +192,11 @@ static void main_task(void * arg)
         tm.tm_mday += 1;
         tm.tm_hour = 0;
         tm.tm_min = 0;
-        tm.tm_sec = 0; 
+        tm.tm_sec = 0;
         time_t midnight = mktime(&tm);
-        
+
         st->period = "Awaiting Midnight";
-        st->since = time_now.tv_sec
+        st->since = time_now.tv_sec;
         st->duration = midnight - st->since;
         task_delay(&last_wake_time, st->duration);
         #endif
