@@ -1,0 +1,45 @@
+menu "Device config"
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default ""
+        help
+            SSID (network name) for the device to connect to.
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default ""
+        help
+            WiFi password for the device to use.
+
+    config SNTP_SERVER
+        string "SNTP Server"
+        default "time.cloudflare.com"
+        help
+            SNTP server for the device to use.
+
+    config TIMEZONE
+        string "Timezone"
+        default "EST5EDT"
+        help
+            Timezone of the device location.
+
+    config LATITUDE
+        string "Latitude"
+        default "38.889465"
+        help
+            Latitude of the device location.
+
+    config LONGITUDE
+        string "Longitude"
+        default "-77.035246"
+        help
+            Longitude of the device location.
+
+    config RELAY_PIN
+        int "Relay control pin"
+        default 5
+        help
+            Pin that is used to control lights relay.
+
+endmenu

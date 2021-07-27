@@ -1,0 +1,12 @@
+{
+    "morning" : {
+        "enabled": "set_morning_enabled",
+        "on_time": "set_morning_on_time",
+        "min_duration": "set_morning_min_duration"
+    },
+    "evening": {
+        "enabled": "set_evening_enabled",
+        "off_time": "set_evening_off_time"
+    },
+    "daylight_alt": "set_daylight_altitude"
+}

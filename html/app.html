@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" sizes="any">
+  <title>Light Switch</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #465457;
+      color: navajowhite;
+      height: 100vh;
+      font: 400 9pt Poppins, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .power-switch {
+      --color-invert: #ffffff;
+      --width: 300px;
+      --height: 300px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: var(--width);
+      height: var(--height);
+    }
+
+    .power-switch .power-button {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .power-switch .power-button:after {
+      content: "";
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      background: radial-gradient(circle closest-side, var(--color-invert), transparent);
+      filter: blur(20px);
+      opacity: 0;
+      transition: opacity 1s ease, transform 1s ease;
+      transform: perspective(1px) translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+
+    .power-switch .power-button .power-on,
+    .power-switch .power-button .power-off {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      z-index: 1;
+      fill: none;
+      stroke: var(--color-invert);
+      stroke-width: 8px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .power-switch .power-button .power-on .line,
+    .power-switch .power-button .power-off .line {
+      opacity: 0.2;
+    }
+
+    .power-switch .power-button .power-on .circle,
+    .power-switch .power-button .power-off .circle {
+      opacity: 0.2;
+      transform: rotate(-58deg);
+      transform-origin: center 80px;
+      stroke-dasharray: 220;
+      stroke-dashoffset: 40;
+    }
+
+    .power-switch .power-button .power-on {
+      filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.8));
+    }
+
+    .power-switch .power-button .power-on .line {
+      opacity: 0;
+      transition: opacity 0.3s ease 1s;
+    }
+
+    .power-switch .power-button .power-on .circle {
+      opacity: 1;
+      stroke-dashoffset: 220;
+      transition: transform 0s ease, stroke-dashoffset 1s ease 0s;
+    }
+
+    .power-switch input {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: 2;
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    .power-switch input:checked+.power-button:after {
+      opacity: 0.15;
+      transform: scale(2) perspective(1px) translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .power-switch input:checked+.power-button .power-on,
+    .power-switch input:checked+.power-button .power-off {
+      -webkit-animation: click-animation 0.3s ease forwards;
+      animation: click-animation 0.3s ease forwards;
+      transform: scale(1);
+    }
+
+    .power-switch input:checked+.power-button .power-on .line,
+    .power-switch input:checked+.power-button .power-off .line {
+      -webkit-animation: line-animation 0.8s ease-in forwards;
+      animation: line-animation 0.8s ease-in forwards;
+    }
+
+    .power-switch input:checked+.power-button .power-on .circle,
+    .power-switch input:checked+.power-button .power-off .circle {
+      transform: rotate(302deg);
+    }
+
+    .power-switch input:checked+.power-button .power-on .line {
+      opacity: 1;
+      transition: opacity 0.05s ease-in 0.55s;
+    }
+
+    .power-switch input:checked+.power-button .power-on .circle {
+      transform: rotate(302deg);
+      stroke-dashoffset: 40;
+      transition: transform 0.4s ease 0.2s, stroke-dashoffset 0.4s ease 0.2s;
+    }
+
+    @-webkit-keyframes line-animation {
+      0% {
+        transform: translateY(0);
+      }
+
+      10% {
+        transform: translateY(10px);
+      }
+
+      40% {
+        transform: translateY(-25px);
+      }
+
+      60% {
+        transform: translateY(-25px);
+      }
+
+      85% {
+        transform: translateY(10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    @keyframes line-animation {
+      0% {
+        transform: translateY(0);
+      }
+
+      10% {
+        transform: translateY(10px);
+      }
+
+      40% {
+        transform: translateY(-25px);
+      }
+
+      60% {
+        transform: translateY(-25px);
+      }
+
+      85% {
+        transform: translateY(10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    @-webkit-keyframes click-animation {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(0.9);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes click-animation {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(0.9);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    fieldset {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      border: 4px groove #6d7c80;
+      width: 90vw;
+      margin-top: 2ex;
+    }
+
+    legend {
+      color: rgba(0, 0, 0, 0.7);
+      font-size: 12pt;
+      font-weight: bold;
+      text-shadow: 0 1px rgba(255, 255, 255, .3);
+      margin-left: 1em;
+      padding: 0 1ex;
+    }
+
+    .form-element-left {
+      width: 130px;
+    }
+
+    .form-element-right {
+      flex-grow: 1;
+      max-width: 60vw;
+    }
+
+    .form-element-left,
+    .form-element-right,
+    .form-element-full {
+      margin: 1ex;
+      height: 12ex;
+    }
+
+    .form-element-full {
+      flex-grow: 3;
+      max-width: 90vw;
+    }
+
+    @media screen and (min-width: 42em) {
+      fieldset {
+        width: 40em;
+      }
+      .form-element-right {
+        max-width: 20em;
+      }
+      .form-element-full {
+        max-width: 40em;
+      }
+    }
+
+    .rocker-switch {
+      display: inline-block;
+      vertical-align: middle;
+      text-align: center;
+      width: 130px;
+      border: none;
+    }
+
+    .rocker-switch-control {
+      border: 2px solid #102838;
+      border-radius: 7px;
+      display: inline-block;
+      width: 100px;
+      height: 50px;
+      padding-top: 1px;
+      position: relative;
+      vertical-align: middle;
+      margin: 2px 20px 2px 0;
+      color: #567280;
+      box-shadow: 0 0 5px rgba(255, 255, 255, .4),
+        0 2px 1px -1px rgba(255, 255, 255, .7) inset,
+        8px 0 5px -5px #2f4852 inset,
+        -8px 0 5px -5px #28434e inset;
+      -webkit-user-select: none;
+      user-select: none;
+      background: #abc1c4;
+    }
+
+    .rocker-switch-control input {
+      position: absolute;
+      visibility: hidden;
+    }
+
+    .rocker-switch-control>div {
+      background: -webkit-linear-gradient(left, #abcfd4 0%, #cde5e9 53%, #a8c1c5 56%, #749199 99%, #d9e3e6 100%);
+      background: linear-gradient(to right, #abcfd4 0%, #cde5e9 53%, #a8c1c5 56%, #749199 99%, #d9e3e6 100%);
+      box-shadow: -2px 0 1px 0 #bad5da inset;
+      border-radius: 5px;
+      line-height: 50px;
+      font-size: 15pt;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+
+      transform-origin: 0 0;
+      -webkit-transform-origin: 0 0;
+      transform: scaleX(0.93);
+      -webkit-transform: scaleX(0.93);
+      transition: .1s;
+      -webkit-transition: 0.1s;
+    }
+
+    .rocker-switch-control div:first-letter {
+      letter-spacing: 55px;
+    }
+
+    .rocker-switch-control :checked~div {
+      -webkit-transform-origin: 100% 0;
+      transform-origin: 100% 0;
+      box-shadow: 2px 0 1px 0 #c3dadd inset;
+      background: -webkit-linear-gradient(left, #d9e3e6 0%, #749199 1%, #a8c1c5 47%, #cde5e9 50%, #abcfd4 100%);
+      background: linear-gradient(to right, #d9e3e6 0%, #749199 1%, #a8c1c5 47%, #cde5e9 50%, #abcfd4 100%);
+    }
+
+    .rocker-switch-control>b {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 50%;
+      height: 100%;
+      border-radius: 8px;
+      -webkit-transform: skewY(5deg);
+      transform: skewY(5deg);
+      box-shadow: 0 6px 8px -5px #000;
+    }
+
+    .rocker-switch-control :checked~b {
+      right: auto;
+      left: 0;
+      -webkit-transform: skewY(-5deg);
+      transform: skewY(-5deg);
+    }
+
+    .rocker-switch-control .indicator {
+      position: absolute;
+      top: 14px;
+      right: -20px;
+      width: 8px;
+      height: 25px;
+      box-shadow: 0 0 8px #000 inset;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      -webkit-transition: 0.2s;
+      transition: 0.2s;
+    }
+
+    .rocker-switch-control .indicator:before {
+      content: '';
+      display: inline-block;
+      margin-top: 8px;
+      width: 2px;
+      height: 8px;
+      border-radius: 10px;
+      -webkit-transition: 0.5s;
+      transition: 0.5s;
+    }
+
+    .rocker-switch-control :checked~.indicator:before {
+      box-shadow: 0 0 7px 6px #BAFC58;
+      width: 6px;
+      background: #F0F9E3;
+      -webkit-transition: 0.1s;
+      transition: 0.1s;
+    }
+
+    .range-slider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rs-minmax {
+      margin-top: 1ex;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10pt;
+      color: #FFFFFF;
+    }
+
+    .rs-control,
+    .rs-minmax {
+      width: 90%;
+      margin-left: 2ex;
+      margin-right: 2ex;
+    }
+
+    .rs-range {
+      margin-top: 3ex;
+      width: 100%;
+      -webkit-appearance: none;
+      border: 1px solid #fff;
+    }
+
+    .rs-range:focus {
+      outline: none;
+    }
+
+    .rs-range::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 0.5ex;
+      cursor: pointer;
+      box-shadow: none;
+      background: #ffffff;
+      border-radius: 50%;
+      border: 0px solid #010101;
+    }
+
+    .rs-range::-moz-range-track {
+      width: 100%;
+      height: 5px;
+      /* cursor: pointer; */
+      box-shadow: none;
+      background: #ffffff;
+      border: none;
+      border-radius: 3px;
+      /* border: 0px solid #010101; */
+    }
+
+    .rs-range::-webkit-slider-thumb {
+      box-shadow: none;
+      border: 0px solid #ffffff;
+      box-shadow: 0px 1ex 1ex rgba(0, 0, 0, 0.25);
+      height: 5ex;
+      width: 2ex;
+      border-radius: 1ex;
+      background: white;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -2.5ex;
+    }
+
+    .rs-range::-moz-range-thumb {
+      box-shadow: none;
+      border: 0px solid #ffffff;
+      box-shadow: 0px 1ex 1ex rgba(0, 0, 0, 0.25);
+      height: 5ex;
+      width: 2ex;
+      border-radius: 1ex;
+      background: white;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -2.5ex;
+    }
+
+    .rs-range::-moz-focus-outer {
+      border: 0;
+    }
+
+    .rs-label {
+      position: relative;
+      left: 0px;
+      height: 2ex;
+      width: 5ex;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12pt;
+      font-weight: bold;
+      text-align: center;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 1ex;
+      box-shadow: 0 1ex 1ex rgba(0, 0, 0, 0.25);
+      margin-left: -2ex;
+    }
+
+    .menu {
+      --width: 5em;
+      --height: 5em;
+      position: fixed;
+      top: 0;
+      right: 0;
+      margin: 0;
+      padding: 6px;
+      width: var(--width);
+      height: var(--height);
+    }
+
+    .menu input {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: 2;
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    .menu input:checked+.opt #do-conf {
+      display: none;
+    }
+
+    .menu .opt {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .menu .opt #do-conf,
+    .menu .opt #do-ctrl {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      z-index: 1;
+    }
+  </style>
+  <script>
+    let powerSwitch, powerSwitchState, conf, morningSwitchState, eveningSwitchState;
+    let morningOnTime, morningMinTime, eveningOffTime, daylightAlt;
+
+    function init() {
+      powerSwitch = document.getElementById('power-switch');
+      powerSwitchState = document.getElementById('power-switch-state');
+      conf = document.getElementById('conf');
+      morningSwitchState = document.getElementById('morning-switch-state');
+      eveningSwitchState = document.getElementById('evening-switch-state');
+      morningOnTime = document.getElementById('morning-on-time');
+      morningMinTime = document.getElementById('morning-min-time');
+      eveningOffTime = document.getElementById('evening-off-time');
+      daylightAlt = document.getElementById('daylight-alt');
+    }
+
+    function toggleMainConfPanels() {
+      if (conf.style.display === "none") {
+        powerSwitch.style.display = "none";
+        conf.style.display = "block";
+        setAllSliderLabels();
+      } else {
+        conf.style.display = "none";
+        powerSwitch.style.display = "flex";
+      }
+    }
+
+    function setAllSliderLabels() {
+      setSliderLabel(morningOnTime, formatTime(morningOnTime.value));
+      setSliderLabel(morningMinTime, morningMinTime.value);
+      setSliderLabel(eveningOffTime, formatTime(eveningOffTime.value));
+      setSliderLabel(daylightAlt, formatDecimal(daylightAlt.value));
+    }
+
+    function setSliderLabel(input, text) {
+      let label = input.previousElementSibling;
+      label.innerText = text;
+      let labelMarginLeft = parseFloat(window.getComputedStyle(label).marginLeft);
+      // left margin absolute value was deliberatily set be the same as the thumb width
+      let thumbWidth = -labelMarginLeft;
+      let position = (input.value - input.min) / (input.max - input.min);
+      label.style.left = (position * (input.clientWidth - thumbWidth * 0.75)) + "px";
+    }
+
+    function formatTime(value) {
+      value = parseInt(value);
+      if (value < 0) value += 1440;
+      let minutes = value % 60;
+      let hours = (value - minutes) / 60;
+      return ( hours + ':' + minutes.toString().padStart(2, '0') );
+    }
+
+    function formatDecimal(value) {
+      value = parseInt(value);
+      let fraction = value % 10;
+      let integer = (value - fraction) / 10;
+      return ( integer + '.' + fraction );
+    }
+
+    function applyConf(conf, updateGui = false) {
+      morningSwitchState.checked = (conf.morning.enabled === true);
+      eveningSwitchState.checked = (conf.evening.enabled === true);
+      let [hours,mins] = conf.morning.on_time.split(":").map(val => parseInt(val));
+      morningOnTime.value = hours * 60 + mins;
+      morningMinTime.value = conf.morning.min_duration;
+      [hours,mins] = conf.evening.off_time.split(":").map(val => parseInt(val));
+      if (hours <= 23) hours -= 24;
+      eveningOffTime.value = hours * 60 + mins;
+      daylightAlt.value = conf.daylight_alt * 10;
+      if (updateGui) {
+        setAllSliderLabels();
+      }
+    }
+
+    function getSwitchState() {
+      fetch('/ctrl')
+        .then(resp => resp.text())
+        .then(ctrl => powerSwitchState.checked = (ctrl === '1'));
+    }
+
+    function powerSwitchChanged(checkbox) {
+      fetch('/ctrl', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'text/plain' },
+          body: ( checkbox.checked ? '1' : '0' ) })
+        .then(resp => { if (!resp.ok) checkbox.checked = !checkbox.checked; });
+    }
+
+    function getConf(updateGui = false) {
+      fetch('/conf')
+        .then(resp => resp.json())
+        .then(conf => applyConf(conf, updateGui));
+    }
+
+    function patchConf(patch) {
+      fetch('/conf', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch) })
+        .then(resp => { if (!resp.ok) setTimeout(getConf, 20, true); return resp.text(); })
+        .then(text => console.debug(text))
+        .catch(err => setTimeout(getConf, 20, true) );
+    }
+
+    let patchConfDelay;
+
+    function updateDeviceConf(...args) {
+      clearTimeout(patchConfDelay);
+      patchConfDelay = setTimeout(patchConf, 900, ...args);
+    }
+
+    let morningEnabledPatch = { morning: { enabled: false   } };
+    let morningOnTimePatch  = { morning: { on_time: ""      } };
+    let morningMinTimePatch = { morning: { min_duration: 0  } };
+    let eveningEnabledPatch = { evening: { enabled: false   } };
+    let eveningOffTimePatch = { evening: { off_time: ""     } };
+    let daylightAltPatch    = { daylight_alt: 0.0 };
+
+    function morningSwitchChanged(input) {
+      morningEnabledPatch.morning.enabled = input.checked;
+      updateDeviceConf(morningEnabledPatch);
+    }
+
+    function eveningSwitchChanged(input) {
+      eveningEnabledPatch.evening.enabled = input.checked;
+      updateDeviceConf(eveningEnabledPatch);
+    }
+
+    function morningOnTimeChanged(input) {
+      let timeVal = formatTime(input.value);
+      setSliderLabel(input, timeVal);
+      morningOnTimePatch.morning.on_time = timeVal;
+      updateDeviceConf(morningOnTimePatch);
+    }
+
+    function morningMinTimeChanged(input) {
+      setSliderLabel(input, input.value);
+      morningMinTimePatch.morning.min_duration = parseInt(input.value);
+      updateDeviceConf(morningMinTimePatch);
+    }
+
+    function eveningOffTimeChanged(input) {
+      let timeVal = formatTime(input.value);
+      setSliderLabel(input, timeVal);
+      eveningOffTimePatch.evening.off_time = timeVal;
+      updateDeviceConf(eveningOffTimePatch);
+    }
+
+    function daylightAltChanged(input) {
+      let altVal = formatDecimal(input.value);
+      setSliderLabel(input, altVal);
+      daylightAltPatch.daylight_alt = parseFloat(altVal);
+      updateDeviceConf(daylightAltPatch);
+    }
+  </script>
+</head>
+
+<body onload="init(); getSwitchState(); getConf()">
+
+  <div class="menu">
+    <input type="checkbox" onchange="toggleMainConfPanels()" />
+    <div class="opt">
+      <svg id="do-conf" viewBox="0 0 506 550">
+        <use xlink:href="#gear" />
+      </svg>
+      <svg id="do-ctrl" viewBox="0 0 506 550">
+        <use xlink:href="#bulb" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="power-switch" id="power-switch">
+    <input type="checkbox" id="power-switch-state" onchange="powerSwitchChanged(this)" />
+    <div class="power-button">
+      <svg class="power-off" viewBox="0 0 150 150">
+        <use xlink:href="#line" class="line" />
+        <use xlink:href="#circle" class="circle" />
+      </svg>
+      <svg class="power-on" viewBox="0 0 150 150">
+        <use xlink:href="#line" class="line" />
+        <use xlink:href="#circle" class="circle" />
+      </svg>
+    </div>
+  </div>
+
+  <form id="conf" style="display:none">
+    <fieldset>
+      <legend>Morning</legend>
+
+      <div class="form-element-left">
+        <div class='rocker-switch'>
+          <label class='rocker-switch-control'>
+            <input type='checkbox' id="morning-switch-state" onchange="morningSwitchChanged(this)" />
+            <div>ΟΙ</div><b></b>
+            <span class='indicator'></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-element-right">
+        <div class="range-slider">
+          <div class="rs-control">
+            <span class="rs-label">0</span>
+            <input class="rs-range" type="range" value="0" min="0" max="15" oninput="morningMinTimeChanged(this)" id="morning-min-time" />
+          </div>
+          <div class="rs-minmax">
+            <span>0</span><span>Min On</span><span>15</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-element-full">
+        <div class="range-slider">
+          <div class="rs-control">
+            <span class="rs-label">5:00</span>
+            <input class="rs-range" type="range" value="300" min="300" max="479" oninput="morningOnTimeChanged(this)" id="morning-on-time" />
+          </div>
+          <div class="rs-minmax">
+            <span>5:00</span><span>On Time</span><span>7:59</span>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Evening</legend>
+
+      <div class="form-element-left">
+        <div class='rocker-switch'>
+          <label class='rocker-switch-control'>
+            <input type='checkbox' id="evening-switch-state" onchange="eveningSwitchChanged(this)" />
+            <div>ΟΙ</div><b></b>
+            <span class='indicator'></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-element-right">
+        <div class="range-slider">
+          <div class="rs-control">
+            <span class="rs-label">0.0</span>
+            <input class="rs-range" type="range" value="0" min="0" max="63" oninput="daylightAltChanged(this)" id="daylight-alt" />
+          </div>
+          <div class="rs-minmax">
+            <span>0.0</span><span>Sun Alt</span><span>6.3</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-element-full">
+        <div class="range-slider">
+          <div class="rs-control">
+            <span class="rs-label">21:00</span>
+            <input class="rs-range" type="range" value="-180" min="-180" max="120" oninput="eveningOffTimeChanged(this)" id="evening-off-time" />
+          </div>
+          <div class="rs-minmax">
+            <span>21:00</span><span>Off Time</span><span>2:00</span>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+  <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="line">
+      <line x1="75" y1="34" x2="75" y2="58" />
+    </symbol>
+    <symbol id="circle">
+      <circle cx="75" cy="80" r="35" />
+    </symbol>
+    <symbol id="gear">
+      <path d="M253 0c-9.19 0-18.55.51-27.83 1.53a7.41 7.41 0 0 0-6.53 6.35l-5.74 41.47a206.84 206.84 0 0 0-27.02 7.22L160.2 23.54a7.41 7.41 0 0 0-8.83-2.23c-8.55 3.76-16.9 8-24.87 12.59a256.6 256.6 0 0 0-23.33 15.24 7.41 7.41 0 0 0-2.49 8.77l15.78 38.8a208 208 0 0 0-19.75 19.75l-38.8-15.78a7.41 7.41 0 0 0-8.77 2.49A256.48 256.48 0 0 0 33.9 126.5a256.7 256.7 0 0 0-12.6 24.87 7.41 7.41 0 0 0 2.24 8.83l33.03 25.68a207 207 0 0 0-7.22 27.03l-41.47 5.73a7.41 7.41 0 0 0-6.35 6.53A256.62 256.62 0 0 0 0 253c0 9.19.52 18.55 1.53 27.83a7.41 7.41 0 0 0 6.35 6.53l41.47 5.74a207.7 207.7 0 0 0 7.22 27.02L23.54 345.8a7.41 7.41 0 0 0-2.23 8.83 255.14 255.14 0 0 0 27.82 48.21 7.42 7.42 0 0 0 8.78 2.48l38.8-15.78c6.12 7 12.74 13.62 19.75 19.76l-15.78 38.8a7.41 7.41 0 0 0 2.49 8.77 256.7 256.7 0 0 0 23.33 15.24 257.4 257.4 0 0 0 24.87 12.59 7.41 7.41 0 0 0 8.83-2.24l25.68-33.02a206.95 206.95 0 0 0 26.74 7.16v-15.14a191.49 191.49 0 0 1-26.72-7.75 7.41 7.41 0 0 0-8.43 2.4l-25.38 32.63a240.82 240.82 0 0 1-35.47-20.48l15.6-38.34c1.21-3 .34-6.44-2.14-8.5a194.33 194.33 0 0 1-25.5-25.5 7.41 7.41 0 0 0-8.5-2.13l-38.34 15.6a240.58 240.58 0 0 1-20.48-35.48l32.64-25.38a7.41 7.41 0 0 0 2.4-8.43 191.8 191.8 0 0 1-9.31-34.84 7.41 7.41 0 0 0-6.3-6.12l-40.98-5.66a240.12 240.12 0 0 1 0-40.96l40.98-5.66a7.41 7.41 0 0 0 6.3-6.12c2-11.87 5.13-23.6 9.3-34.84a7.41 7.41 0 0 0-2.4-8.43l-32.63-25.38a241 241 0 0 1 20.48-35.47l38.34 15.59c3 1.22 6.44.35 8.5-2.13a194.4 194.4 0 0 1 25.5-25.5 7.41 7.41 0 0 0 2.13-8.5l-15.6-38.34a240.9 240.9 0 0 1 35.48-20.48l25.38 32.64a7.41 7.41 0 0 0 8.43 2.4 191.68 191.68 0 0 1 34.84-9.31 7.41 7.41 0 0 0 6.12-6.3l5.66-40.98a240.54 240.54 0 0 1 40.96 0l5.66 40.98a7.41 7.41 0 0 0 6.12 6.3c11.87 2 23.6 5.13 34.84 9.3a7.41 7.41 0 0 0 8.43-2.4l25.38-32.63c6.22 2.92 12.32 6.1 18.18 9.47a240.51 240.51 0 0 1 17.3 11l-15.6 38.35a7.41 7.41 0 0 0 2.13 8.5 194.4 194.4 0 0 1 25.5 25.5 7.41 7.41 0 0 0 8.5 2.13l38.34-15.6a240.46 240.46 0 0 1 20.48 35.47l-32.64 25.39a7.41 7.41 0 0 0-2.4 8.43 191.72 191.72 0 0 1 9.31 34.84 7.41 7.41 0 0 0 6.3 6.12l40.98 5.66a240.54 240.54 0 0 1 0 40.96l-40.98 5.66a7.41 7.41 0 0 0-6.3 6.12c-2 11.88-5.13 23.6-9.3 34.84a7.41 7.41 0 0 0 2.4 8.43l32.63 25.38a240.58 240.58 0 0 1-20.48 35.47l-38.34-15.6a7.41 7.41 0 0 0-8.5 2.14 194.44 194.44 0 0 1-25.5 25.5 7.41 7.41 0 0 0-2.13 8.5l15.6 38.34a240.8 240.8 0 0 1-35.48 20.48l-25.38-32.64a7.41 7.41 0 0 0-8.43-2.4 191.4 191.4 0 0 1-26.61 7.73v15.14a206.9 206.9 0 0 0 26.63-7.14l25.68 33.03a7.41 7.41 0 0 0 8.83 2.23 255.67 255.67 0 0 0 48.21-27.83 7.41 7.41 0 0 0 2.48-8.77l-15.78-38.8c7-6.12 13.63-12.74 19.76-19.75l38.8 15.78a7.41 7.41 0 0 0 8.77-2.49 256.82 256.82 0 0 0 15.23-23.33c4.6-7.96 8.83-16.32 12.6-24.87a7.41 7.41 0 0 0-2.24-8.83l-33.03-25.68a205.43 205.43 0 0 0 7.22-27.03l41.47-5.73a7.41 7.41 0 0 0 6.35-6.53A256.88 256.88 0 0 0 506 253c0-9.19-.51-18.55-1.53-27.83a7.41 7.41 0 0 0-6.35-6.53l-41.47-5.74a206.91 206.91 0 0 0-7.22-27.02l33.03-25.68a7.41 7.41 0 0 0 2.23-8.83 257.4 257.4 0 0 0-12.59-24.87 256.48 256.48 0 0 0-15.24-23.33 7.41 7.41 0 0 0-8.77-2.49l-38.8 15.78a208 208 0 0 0-19.75-19.75l15.78-38.8a7.41 7.41 0 0 0-2.49-8.77A256.73 256.73 0 0 0 379.5 33.9a256.81 256.81 0 0 0-24.87-12.6 7.41 7.41 0 0 0-8.83 2.24l-25.68 33.03a207 207 0 0 0-27.03-7.22l-5.73-41.47a7.41 7.41 0 0 0-6.53-6.35A256.63 256.63 0 0 0 253 0z" />
+      <path d="M143.91 464.3c-4.24-2.2-9.17-4.86-10.95-5.93-5.87-3.5-15.73-10.03-15.73-10.41 0-.21 3.56-9.12 7.9-19.8 4.34-10.7 7.9-20.14 7.9-20.99 0-2.63-1.25-4.72-4.38-7.36-4.83-4.07-16.24-15.39-20.92-20.74-4.63-5.31-6.37-6.36-9.79-5.88-1.02.14-10.35 3.72-20.75 7.95a973.43 973.43 0 0 1-19.2 7.7c-.41 0-6.1-8.72-10.2-15.67-4.62-7.79-10.2-19.02-9.69-19.48.23-.21 7.72-6.05 16.64-12.98 8.98-6.98 16.65-13.31 17.19-14.2 1.4-2.3 1.22-4.5-.82-10.55a220.9 220.9 0 0 1-6.85-25.48c-1.58-7.83-2.33-9.39-5.14-10.74-1.08-.52-9.1-1.83-21.1-3.45a1474.25 1474.25 0 0 1-20.7-2.88c-1.27-.25-1.36-.47-1.7-4.32-.45-5.16-.36-29.31.12-33.32l.37-3.04 20.9-2.88c12.91-1.77 21.5-3.18 22.47-3.68 2.4-1.24 3.24-3 4.52-9.45a197.5 197.5 0 0 1 6.45-24.48c2.98-9.1 3.08-11.29.6-13.9-1.11-1.18-30.45-24.3-32.96-25.97-1.03-.68 9.48-20.06 16.66-30.73l3.13-4.65 19.1 7.78c10.51 4.28 19.87 7.94 20.79 8.12 3.01.6 5.62-.88 9.29-5.24a226.16 226.16 0 0 1 19.6-19.73c4.92-4.25 6.31-6.2 6.34-8.87.02-1.06-2.9-8.88-7.68-20.64a1229.34 1229.34 0 0 1-7.95-19.8c-.3-1.07 9.02-7.3 20.24-13.53 10.4-5.77 14.17-7.56 14.7-6.98.26.27 6.13 7.79 13.06 16.7 6.98 9 13.3 16.66 14.2 17.2 2.24 1.37 4.73 1.22 9.6-.56 6.22-2.27 17.46-5.34 26.02-7.1 8.08-1.66 9.64-2.35 10.92-4.8.51-1 1.9-9.38 3.7-22.34 1.59-11.41 3.01-20.88 3.17-21.04.8-.8 20.62-1.34 29.94-.83 5.4.3 9.94.67 10.1.83.16.16 1.59 9.63 3.17 21.04 1.8 12.96 3.2 21.34 3.7 22.33 1.26 2.42 2.86 3.16 9.9 4.59a192.54 192.54 0 0 1 24.73 6.55c7.52 2.55 9.54 2.78 11.92 1.33.9-.55 7.3-8.3 14.42-17.45 7.05-9.06 13.03-16.54 13.3-16.64.61-.21 13.33 6.43 20.35 10.64 9.64 5.77 14.38 9.16 14.12 10.08-.14.47-3.71 9.37-7.95 19.78-4.78 11.76-7.7 19.58-7.68 20.64.03 2.68 1.42 4.62 6.35 8.87a232.44 232.44 0 0 1 19.7 19.86c3.55 4.22 6.2 5.7 9.19 5.1.92-.17 10.27-3.83 20.78-8.11l19.1-7.8 3.13 4.66c5.98 8.9 17.65 29.9 16.95 30.5l-16.26 12.67c-8.82 6.87-16.59 13.08-17.25 13.8-2.18 2.36-2.02 4.83.86 13.64a197.5 197.5 0 0 1 6.45 24.48c1.28 6.43 2.13 8.21 4.5 9.43.93.48 9.8 1.93 22.47 3.68l20.93 2.88.36 3.05c.47 3.98.55 28.67.1 33.6-.34 3.78-.36 3.82-1.93 4.1-.88.15-10.47 1.5-21.32 3-13.7 1.88-20.11 2.97-21 3.55-2.19 1.43-2.89 3.12-4.41 10.63a211.28 211.28 0 0 1-6.85 25.36c-1.99 5.7-2.18 8.2-.8 10.47.52.86 8.15 7.14 16.94 13.96 8.79 6.82 16.29 12.67 16.66 13.01.55.5.06 1.83-2.68 7.31-4.66 9.3-16 28.1-16.95 28.1-.13 0-8.76-3.47-19.17-7.7-10.42-4.24-19.77-7.82-20.79-7.96-3.41-.48-5.16.57-9.79 5.88-4.67 5.35-16.09 16.67-20.91 20.74-3.13 2.63-4.38 4.73-4.38 7.33 0 .84 3.55 10.28 7.9 20.98 4.34 10.7 7.9 19.62 7.9 19.83 0 .5-11.1 7.72-17.54 11.43-5.54 3.18-17.14 9.1-17.35 8.84l-12.7-16.33c-6.92-8.9-13.13-16.7-13.8-17.32-1.17-1.1-1.24-1.5-1.4-8.28-.08-3.93-.33-7.5-.54-7.93-.31-.62.4-1.14 3.36-2.44 10.1-4.44 24.56-13.3 35.5-21.76 7.58-5.85 23.96-22.24 29.76-29.77a185.49 185.49 0 0 0 19.37-30.5c20.08-40.08 24.3-85.82 11.94-129.73-4.96-17.66-15.18-38.82-26.01-53.87-8.19-11.38-24.04-28.23-33.44-35.54C336.46 91.8 304.92 79.12 269.62 76c-8.75-.77-31.36-.33-39.03.76a183.49 183.49 0 0 0-42.54 11.08 178.75 178.75 0 0 0-112.07 150.2c-.66 7.47-.67 24.07-.01 31.33a178.66 178.66 0 0 0 45.21 103.94 178.05 178.05 0 0 0 54.52 41.07c6.57 3.19 7.22 3.63 6.75 4.5-.28.53-.52 3.96-.52 7.62v6.64l-1.27.32c-1.75.44-3.84 2.89-17.07 20-6.3 8.15-11.57 14.82-11.71 14.83-.14 0-3.73-1.8-7.97-3.99z" fill="#3e3d42" stroke="#3e3d42" stroke-width="1.8" />
+      <path d="M213.64 420.38A171.32 171.32 0 0 1 82.51 253.84 171.32 171.32 0 0 1 253.84 82.5a171.32 171.32 0 0 1 171.32 171.33 171.32 171.32 0 0 1-132.68 166.9" fill="none" stroke="#000" stroke-width="14" />
+    </symbol>
+    <symbol id="bulb">
+      <path d="M190.02 422.04h128v24h-128z" fill="#d8d7da" />
+      <path d="M206.02 446.04h96v36a20 20 0 0 1-20 20h-56a20 20 0 0 1-20-20z" fill="#3e3d42" />
+      <path d="M278.02 502.04h-49l8-32h33z" fill="#ff9811" />
+      <path d="M390.02 254.42a136.04 136.04 0 0 1-83.6 125.16 20.07 20.07 0 0 0-12.4 18.5v23.96h-80v-23.97a19.9 19.9 0 0 0-12.2-18.4A136.02 136.02 0 0 1 255 118.04c74.56.54 135.22 61.82 135.02 136.38z" fill="#ffda44" />
+      <path d="M238.02 502.04h32v24h-32z" fill="#d8d7da" />
+      <path d="M309.5 386.96a143.76 143.76 0 0 0 88.52-132.52c.2-79.06-63.92-143.84-142.96-144.4a144.02 144.02 0 0 0-56.3 277.01 11.85 11.85 0 0 1 7.26 11.02v15.97h-16a8 8 0 0 0-8 8v24a8 8 0 0 0 8 8h8v28a28.03 28.03 0 0 0 28 28h4v16a8 8 0 0 0 8 8h8v8a8 8 0 1 0 16 0v-8h8a8 8 0 0 0 8-8v-16h4a28.03 28.03 0 0 0 28-28v-28h8a8 8 0 0 0 8-8v-24a8 8 0 0 0-8-8h-16v-15.97a12.05 12.05 0 0 1 7.49-11.1zm-47.48 131.08h-16v-8h16zm-22.75-24 4-16h20.5l4 16zm54.75-12a12.02 12.02 0 0 1-9.81 11.8l-6.43-25.74a8 8 0 0 0-7.76-6.06h-33a8 8 0 0 0-7.76 6.06l-6.38 25.51a12.01 12.01 0 0 1-8.86-11.57v-28h80zm16-52v8h-112v-8zm-64-16v-108h16v108zm40-15.97v15.97h-8v-108h8a8 8 0 1 0 0-16h-64a8 8 0 0 0-8 8c0 4.42 3.7 9.08 8 8h8v108h-8v-15.97a27.8 27.8 0 0 0-17.12-25.79 128.02 128.02 0 0 1 50.05-246.24c70.26.5 127.26 58.08 127.07 128.35-.07 51.55-31.1 98-78.68 117.8a28.03 28.03 0 0 0-17.32 25.88z" />
+      <circle cx="253.8" cy="253.88" r="9.32" />
+      <path d="M228.63 228.74a7.02 7.02 0 0 0 0 9.9 7.02 7.02 0 0 0 9.9 0 21.59 21.59 0 0 1 30.54 0 6.98 6.98 0 1 0 9.87-9.87 35.58 35.58 0 0 0-50.3-.03z" />
+      <path d="M209.73 209.84a7.02 7.02 0 0 0 0 9.9 7.02 7.02 0 0 0 9.9 0 48.4 48.4 0 0 1 68.36 0 6.98 6.98 0 0 0 9.88 0 7.02 7.02 0 0 0 0-9.9 62.36 62.36 0 0 0-88.14 0z" />
+      <path d="M317.06 190.63c-34.89-34.86-91.63-34.86-126.52 0a7.02 7.02 0 0 0 0 9.9 7.02 7.02 0 0 0 9.9 0c29.42-29.44 77.3-29.44 106.74 0a6.98 6.98 0 0 0 9.88 0 7.02 7.02 0 0 0 0-9.9z" />
+    </symbol>
+  </svg>
+</body>
+
+</html>

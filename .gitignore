@@ -1,8 +1,4 @@
-*
-!Makefile
-!LICENSE
-!*.*
-!components
-local.mk
 .*
-!.git*
+build
+sdkconfig*
+
